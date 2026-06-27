@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Sakura Rolling Slot - Auto Spin</title>
+    <style>
+        body { background: #ffdde1; text-align: center; font-family: sans-serif; padding-top: 20px; }
+        .wrapper { display: grid; grid-template-columns: repeat(3, 100px); justify-content: center; gap: 10px; margin: 20px auto; width: 340px; }
+        .reel { width: 100px; height: 100px; background: white; border-radius: 10px; overflow: hidden; border: 4px solid #d63384; }
+        
+        .slot-strip { display: flex; flex-direction: column; }
+        .symbol { height: 100px; display: flex; align-items: center; justify-content: center; font-size: 50px; }
+        
+        @keyframes scroll {
+            0% { transform: translateY(-200px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .spinning { animation: scroll 0.3s linear 5; } 
+        
+        button { padding: 15px 30px; font-size: 20px; background: #d63384; color: white; border: none; border-radius: 20px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        input, select { padding: 10px; font-size: 18px; margin: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>🌸 Sakura Rolling Slot 🌸</h1>
+    <p>คะแนน: <span id="score">9400</span></p>
+    <div>
+        ใช้คะแนน: <input type="number" id="bet" value="100" min="1" max="1000">
+        รอบอัตโนมัติ: 
+        <select id="autoSpinCount">
+            <option value="0">ปิด</option>
+            <option value="10">10 รอบ</option>
+            <option value="20">20 รอบ</option>
+            <option value="30">30 รอบ</option>
+            <option value="40">40 รอบ</option>
+        </select>
+    </div>
+    
+    <div class="wrapper">
+        <div class="reel"><div class="slot-strip" id="s1"><div class="symbol">🍵</div><div class="symbol">🍡</div><div class="symbol">🌸</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s2"><div class="symbol">🌸</div><div class="symbol">🦊</div><div class="symbol">🍵</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s3"><div class="symbol">🍡</div><div class="symbol">🌸</div><div class="symbol">🦊</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s4"><div class="symbol">🌸</div><div class="symbol">🍵</div><div class="symbol">🎐</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s5"><div class="symbol">🍵</div><div class="symbol">🦊</div><div class="symbol">🌸</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s6"><div class="symbol">🌸</div><div class="symbol">🎐</div><div class="symbol">🍡</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s7"><div class="symbol">🦊</div><div class="symbol">🍵</div><div class="symbol">🌸</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s8"><div class="symbol">🍡</div><div class="symbol">🌸</div><div class="symbol">🍵</div></div></div>
+        <div class="reel"><div class="slot-strip" id="s9"><div class="symbol">🌸</div><div class="symbol">🍡</div><div class="symbol">🦊</div></div></div>
+    </div>
+
+    <button id="btn" onclick="startSpinning()">หมุน!</button>
+
+    <script>
+        let score = 9400;
+        const syms = ["🌸", "🍡", "🍵", "🦊", "🎐"];
+
+        function startSpinning() {
+            let count = parseInt(document.getElementById("autoSpinCount").value);
+            performSpin(count > 0 ? count : 1);
+        }
+
+        function performSpin(remaining) {
+            let bet = parseInt(document.getElementById("bet").value);
+            if (score < bet) {
+                alert("คะแนนไม่พอ!");
+                return;
+            }
+            
+            score -= bet;
+            document.getElementById("score").innerText = score;
+            document.getElementById("btn").disabled = true;
+
+            const reels = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9'];
+            reels.forEach(id => document.getElementById(id).classList.add('spinning'));
+
+            setTimeout(() => {
+                reels.forEach(id => {
+                    document.getElementById(id).classList.remove('spinning');
+                    updateSymbol(id);
+                });
+
+                // ตรวจสอบว่าต้องหมุนต่อไหม
+                if (remaining > 1) {
+                    setTimeout(() => performSpin(remaining - 1), 500); // พัก 0.5 วิระหว่างรอบ
+                } else {
+                    document.getElementById("btn").disabled = false;
+                }
+            }, 1500); 
+        }
+
+        function updateSymbol(id) {
+            let strip = document.getElementById(id);
+            const isMiddleRow = (id === 's4' || id === 's5' || id === 's6');
+            const probability = isMiddleRow ? 0.4 : 0.2;
+
+            if (Math.random() < probability) {
+                const luckySym = syms[Math.floor(Math.random() * syms.length)];
+                strip.children[0].innerText = luckySym;
+                strip.children[1].innerText = luckySym;
+                strip.children[2].innerText = luckySym;
+            } else {
+                strip.children[0].innerText = syms[Math.floor(Math.random() * syms.length)];
+                strip.children[1].innerText = syms[Math.floor(Math.random() * syms.length)];
+                strip.children[2].innerText = syms[Math.floor(Math.random() * syms.length)];
+            }
+        }
+    </script>
+</body>
+</html>
